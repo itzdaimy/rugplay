@@ -1,26 +1,27 @@
-import { PUBLIC_B2_BUCKET, PUBLIC_B2_ENDPOINT } from "$env/static/public";
+import { PUBLIC_B2_BUCKET } from "$env/static/public";
+import { s3Client } from "$lib/server/s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { error } from '@sveltejs/kit';
 
-export async function GET({ params, request }) {
+export async function GET({ params }) {
     const path = params.path;
-    
+
     if (!path) {
         throw error(400, 'Path is required');
     }
 
     try {
-        const s3Url = `${PUBLIC_B2_ENDPOINT}/${PUBLIC_B2_BUCKET}/${path}`;
-        const response = await fetch(s3Url);
+        const s3Response = await s3Client.send(new GetObjectCommand({ Bucket: PUBLIC_B2_BUCKET, Key: path }));
 
-        if (!response.ok) {
-            throw error(response.status, 'Failed to fetch from S3');
+        const contentType = s3Response.ContentType || 'application/octet-stream';
+        const buffer = await s3Response.Body?.transformToByteArray();
+
+        if (!buffer) {
+            throw error(404, 'Object not found');
         }
 
-        const contentType = response.headers.get('content-type') || 'application/octet-stream';
-        const buffer = await response.arrayBuffer();
-
         let cacheControl: string;
-        
+
         if (path.includes('/coin/') || path.includes('coin-icon')) {
             cacheControl = 'public, max-age=31536000, immutable';
         } else if (path.includes('/avatars/') || path.includes('profile-') || path.includes('avatar')) {

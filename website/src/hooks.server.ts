@@ -100,6 +100,12 @@ setInterval(() => {
 }, CACHE_CLEANUP_INTERVAL);
 
 export const handle: Handle = async ({ event, resolve }) => {
+    if (event.request.headers.get('x-forwarded-proto') === 'https' && event.url.protocol === 'http:') {
+        const corrected = new URL(event.url.href.replace(/^http:/, 'https:'));
+        event.url = corrected;
+        event.request = new Request(corrected, event.request);
+    }
+
     if (event.url.pathname.startsWith('/.well-known/appspecific/com.chrome.devtools')) {
         return new Response(null, { status: 204 });
     }
