@@ -4,6 +4,8 @@
 
 ## About
 
+This fork is purely for PRs on the original rugplay site. I do and will not host my own instance of rugplay. 
+
 Rugplay is a realistic cryptocurrency trading simulator that lets you experience the risks and mechanics of decentralized exchanges without real financial consequences. Create coins, trade with liquidity pools, and learn about "rug pulls" in a... relatively safe environment :)
 
 ## Features
